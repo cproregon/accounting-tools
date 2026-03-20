@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oregon Wage Exemption Calculation — Debts Other Than State Tax</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,300;0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --ink: #1a1a1a;
+    --rule: #b0a090;
+    --rule-light: #ddd5c8;
+    --paper: #faf7f3;
+    --paper-deep: #f0ebe3;
+    --accent: #8b3a2a;
+    --accent-light: #f5ede9;
+    --field-bg: #fff;
+    --field-border: #b0a090;
+    --calc-bg: #f0ebe3;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Source Serif 4', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--serif);
+    background: #e8e2d9;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    box-shadow: 0 4px 32px rgba(0,0,0,0.15), 0 1px 4px rgba(0,0,0,0.1);
+    padding: 2.5rem 3rem 3rem;
+    position: relative;
+  }
+
+  /* Header */
+  .form-header {
+    border-bottom: 3px double var(--accent);
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .form-header .top-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .form-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .form-subtitle {
+    font-size: 0.78rem;
+    color: #666;
+    font-style: italic;
+    margin-top: 0.2rem;
+  }
+  .state-seal {
+    font-size: 0.72rem;
+    text-align: right;
+    color: #777;
+    line-height: 1.5;
+    flex-shrink: 0;
+  }
+  .state-seal strong { color: var(--accent); font-size: 0.82rem; }
+  .sub-header {
+    margin-top: 0.9rem;
+    font-size: 0.78rem;
+    color: #555;
+    font-style: italic;
+  }
+
+  /* Debtor row */
+  .debtor-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--rule-light);
+  }
+  .debtor-row label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: #555;
+  }
+  .debtor-row input {
+    flex: 1;
+    border: none;
+    border-bottom: 1.5px solid var(--field-border);
+    background: transparent;
+    font-family: var(--serif);
+    font-size: 1rem;
+    padding: 0.2rem 0.3rem;
+    outline: none;
+    color: var(--ink);
+  }
+  .debtor-row input:focus { border-bottom-color: var(--accent); }
+
+  /* Calc lines */
+  .calc-section { margin-bottom: 0.25rem; }
+
+  .line {
+    display: grid;
+    grid-template-columns: 1.6rem 1fr auto;
+    align-items: baseline;
+    gap: 0.5rem 0.75rem;
+    padding: 0.55rem 0.5rem;
+    border-radius: 3px;
+    transition: background 0.15s;
+  }
+  .line:hover { background: var(--paper-deep); }
+  .line.result { background: var(--calc-bg); }
+  .line.result:hover { background: #e6dfd5; }
+  .line.highlight { background: var(--accent-light); }
+  .line.highlight:hover { background: #eededa; }
+
+  .line-num {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    font-weight: 500;
+    text-align: right;
+    padding-top: 0.1rem;
+    opacity: 0.8;
+  }
+  .line-label {
+    font-size: 0.875rem;
+    line-height: 1.35;
+    color: var(--ink);
+  }
+  .line-label .note {
+    font-size: 0.78rem;
+    color: #777;
+    font-style: italic;
+  }
+  .line-value {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-family: var(--mono);
+    font-size: 0.92rem;
+  }
+  .dollar-sign {
+    color: #888;
+    font-size: 0.82rem;
+  }
+
+  input[type="number"], input[type="text"] {
+    font-family: var(--mono);
+    font-size: 0.92rem;
+    width: 130px;
+    text-align: right;
+    border: 1px solid var(--field-border);
+    background: var(--field-bg);
+    padding: 0.28rem 0.5rem;
+    border-radius: 2px;
+    outline: none;
+    color: var(--ink);
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type="number"]:focus, input[type="text"]:focus {
+    border-color: var(--accent);
+    background: #fffcfb;
+    box-shadow: 0 0 0 2px rgba(139,58,42,0.1);
+  }
+
+  .calc-display {
+    font-family: var(--mono);
+    font-size: 0.92rem;
+    width: 130px;
+    text-align: right;
+    padding: 0.28rem 0.5rem;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    color: var(--ink);
+    background: transparent;
+    letter-spacing: 0.01em;
+  }
+  .calc-display.has-value { font-weight: 500; }
+  .result .calc-display { background: rgba(255,255,255,0.5); border-color: var(--rule-light); }
+  .highlight .calc-display { background: rgba(255,255,255,0.6); border-color: #d9b5ac; color: var(--accent); font-weight: 600; }
+
+  /* Line 5 — minimum exemption */
+  .min-exemption-block {
+    padding: 0.5rem 0.5rem 0.5rem 2.85rem;
+    margin: 0;
+  }
+  .min-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem 1rem;
+  }
+  .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.845rem;
+    cursor: pointer;
+    padding: 0.25rem 0.4rem;
+    border-radius: 2px;
+    transition: background 0.1s;
+  }
+  .radio-option:hover { background: var(--paper-deep); }
+  .radio-option input[type="radio"] {
+    width: auto;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+  .radio-option .amount {
+    font-family: var(--mono);
+    font-weight: 500;
+    color: var(--accent);
+    font-size: 0.85rem;
+  }
+  .radio-option .period {
+    color: #555;
+  }
+  .custom-row {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0.1rem;
+  }
+  .custom-row label { font-size: 0.82rem; color: #555; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;}
+  .custom-row input[type="number"] { width: 110px; }
+
+  /* Dividers */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--rule-light);
+    margin: 0.5rem 0;
+  }
+  .section-divider.heavy {
+    border-top: 2px solid var(--rule);
+    margin: 1rem 0 0.75rem;
+  }
+
+  /* Print button */
+  .actions {
+    margin-top: 2rem;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+  .btn {
+    font-family: var(--serif);
+    font-size: 0.875rem;
+    padding: 0.6rem 1.4rem;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1.5px solid;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: #7a3023; border-color: #7a3023; }
+  .btn-secondary {
+    background: transparent;
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .btn-secondary:hover { background: var(--accent-light); }
+
+  /* Footer note */
+  .form-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--rule-light);
+    font-size: 0.76rem;
+    color: #777;
+    line-height: 1.6;
+    font-style: italic;
+  }
+  .form-footer strong { color: var(--ink); font-style: normal; }
+
+  /* Error state */
+  input.error { border-color: #c0392b !important; }
+
+  /* ===== PRINT ===== */
+  @media print {
+    @page { margin: 1.5cm 2cm; size: letter; }
+    body { background: white; padding: 0; }
+    .page {
+      box-shadow: none;
+      border: none;
+      max-width: 100%;
+      padding: 0;
+    }
+    .actions { display: none; }
+    .btn { display: none; }
+    input[type="number"], input[type="text"] {
+      border: none;
+      border-bottom: 1px solid #999;
+      border-radius: 0;
+    }
+    .line:hover { background: inherit; }
+    .radio-option:hover { background: inherit; }
+    .form-footer { font-size: 0.7rem; }
+    .calc-display { font-weight: 500; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="form-header">
+    <div class="top-line">
+      <div>
+        <div class="form-title">Wage Exemption Calculation</div>
+        <div class="form-subtitle">Debts Other Than State Tax &nbsp;·&nbsp; Effective July 1, 2025</div>
+      </div>
+      <div class="state-seal">
+        <strong>Oregon Department of Revenue</strong><br>
+        955 Center St NE, PO Box 14725<br>
+        Salem, OR 97309-5018<br>
+        oregon.gov/dor
+      </div>
+    </div>
+    <div class="sub-header">To be filled out by employers only. You can also submit payments via Revenue Online.</div>
+  </div>
+
+  <!-- Debtor name -->
+  <div class="debtor-row">
+    <label>Debtor Name:</label>
+    <input type="text" id="debtorName" placeholder="Employee / Debtor full name" autocomplete="off">
+  </div>
+
+  <!-- Lines 1–3 -->
+  <div class="calc-section">
+
+    <div class="line">
+      <div class="line-num">1</div>
+      <div class="line-label">Debtor's gross wages for period covered by this payment</div>
+      <div class="line-value">
+        <span class="dollar-sign">$</span>
+        <input type="number" id="line1" min="0" step="0.01" placeholder="0.00" oninput="recalc()">
+      </div>
+    </div>
+
+    <div class="line">
+      <div class="line-num">2</div>
+      <div class="line-label">Total amount required to be withheld by law from line 1<br><span class="note">Federal &amp; state withholding, Social Security, Medicare, etc.</span></div>
+      <div class="line-value">
+        <span class="dollar-sign">$</span>
+        <input type="number" id="line2" min="0" step="0.01" placeholder="0.00" oninput="recalc()">
+      </div>
+    </div>
+
+    <div class="line result">
+      <div class="line-num">3</div>
+      <div class="line-label">Debtor's disposable wages <span class="note">(Line 1 minus Line 2)</span></div>
+      <div class="line-value">
+        <span class="dollar-sign">$</span>
+        <div class="calc-display" id="line3">—</div>
+      </div>
+    </div>
+
+    <div class="line result">
+      <div class="line-num">4</div>
+      <div class="line-label">Normal wage exemption <span class="note">(75% of Line 3)</span></div>
+      <div class="line-value">
+        <span class="dollar-sign">$</span>
+        <div class="calc-display" id="line4">—</div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Line 5 — minimum exemption -->
+  <div class="calc-section">
+    <div class="line">
+      <div class="line-num">5</div>
+      <div class="line-label">Minimum exemption — select pay period <span class="note">[OAA rates Jul 1, 2025 – Jun 30, 2026]</span></div>
+      <div class="line-value">
+        <span class="dollar-sign">$</span>
+        <div class="calc-display" id="line5display">—</div>
+      </div>
+    </div>
+    <div class="min-exemption-block">
+      <div class="min-options">
+        <label class="radio-option">
+          <input type="radio" name="payperiod" value="338" onchange="recalc()">
+          <span class="amount">$338</span><span class="period">&nbsp;— Weekly</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="payperiod" value="675" onchange="recalc()">
+          <span class="amount">$675</span><span class="period">&nbsp;— Bi-weekly (every 2 weeks)</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="payperiod" value="737" onchange="recalc()">
+          <span class="amount">$737</span><span class="period">&nbsp;— Semi-monthly (twice/month)</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="payperiod" value="1458" onchange="recalc()">
+          <span class="amount">$1,458</span><span class="period">&nbsp;— Monthly</span>
+        </label>
+        <div class="custom-row">
+          <label>
+            <input type="radio" name="payperiod" value="custom" onchange="recalc()">
+            Other period — multiply $338 ×
+          </label>
+          <input type="number" id="customWeeks" min="0" step="0.01" placeholder="# weeks" oninput="recalc()" style="width:90px">
+          <span style="font-size:0.8rem;color:#777;">(incl. fractions)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Lines 6–9 -->
+  <div class="calc-section">
+
+    <div class="line highlight">
+      <div class="line-num">6</div>
+      <div class="line-label">Wages exempt from garnishment <span class="note">(Line 4 or Line 5, whichever is greater)</span></div>
+      <div class="line-value">
+        <span class="dollar-sign">$</span>
+        <div class="calc-display" id="line6">—</div>
+      </div>
+    </div>
+
+    <div class="line result">
+      <div class="line-num">7</div>
+      <div class="line-label">Nonexempt wages <span class="note">(Line 3 minus Line 6)</span></div>
+      <div class="line-value">
+        <span class="dollar-sign">$</span>
+        <div class="calc-display" id="line7">—</div>
+      </div>
+    </div>
+
+    <div class="line">
+      <div class="line-num">8</div>
+      <div class="line-label">Amount withheld this pay period for support order or prior-priority writ<br><span class="note">Leave blank if none</span></div>
+      <div class="line-value">
+        <span class="dollar-sign">$</span>
+        <input type="number" id="line8" min="0" step="0.01" placeholder="0.00" oninput="recalc()">
+      </div>
+    </div>
+
+    <div class="line highlight">
+      <div class="line-num">9</div>
+      <div class="line-label">Wages subject to garnishment <span class="note">(Line 7 minus Line 8)</span></div>
+      <div class="line-value">
+        <span class="dollar-sign">$</span>
+        <div class="calc-display" id="line9">—</div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="section-divider heavy">
+
+  <div class="actions">
+    <button class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+    <button class="btn btn-primary" onclick="window.print()">⎙ &nbsp;Print Form</button>
+  </div>
+
+  <div class="form-footer">
+    <strong>Instructions:</strong> If you employ the debtor named in the Notice of Garnishment, complete and return this form with your first payment. Also return it any time the initial calculation changes. Mail to: <strong>Oregon Dept. of Revenue, 955 Center St NE, PO Box 14725, Salem, OR 97309-5018</strong> — or submit via Revenue Online at oregon.gov/dor. Minimum exemption amounts may change July 1 each year; verify current rates at oregon.gov/dor.
+  </div>
+
+</div>
+
+<script>
+  function val(id) {
+    const v = parseFloat(document.getElementById(id)?.value);
+    return isNaN(v) ? 0 : v;
+  }
+
+  function fmt(n) {
+    if (n === null || n === undefined) return '—';
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function setCalc(id, n) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (n === null) {
+      el.textContent = '—';
+      el.classList.remove('has-value');
+    } else {
+      el.textContent = fmt(n);
+      el.classList.toggle('has-value', true);
+    }
+  }
+
+  function recalc() {
+    const l1 = val('line1');
+    const l2 = val('line2');
+
+    // Line 3: disposable wages
+    const l3 = l1 > 0 ? Math.max(0, l1 - l2) : null;
+    setCalc('line3', l3);
+
+    // Line 4: 75% of line 3
+    const l4 = l3 !== null ? +(l3 * 0.75).toFixed(2) : null;
+    setCalc('line4', l4);
+
+    // Line 5: minimum exemption
+    const selected = document.querySelector('input[name="payperiod"]:checked');
+    let l5 = null;
+    if (selected) {
+      if (selected.value === 'custom') {
+        const weeks = parseFloat(document.getElementById('customWeeks').value);
+        if (!isNaN(weeks) && weeks > 0) {
+          l5 = Math.round(338 * weeks);
+        }
+      } else {
+        l5 = parseFloat(selected.value);
+      }
+    }
+    setCalc('line5display', l5);
+
+    // Line 6: greater of 4 or 5
+    let l6 = null;
+    if (l4 !== null && l5 !== null) {
+      l6 = Math.max(l4, l5);
+    } else if (l4 !== null) {
+      l6 = l4;
+    }
+    setCalc('line6', l6);
+
+    // Line 7: line 3 - line 6
+    let l7 = null;
+    if (l3 !== null && l6 !== null) {
+      l7 = Math.max(0, +(l3 - l6).toFixed(2));
+    }
+    setCalc('line7', l7);
+
+    // Line 8: manually entered
+    const l8 = val('line8');
+
+    // Line 9: line 7 - line 8
+    let l9 = null;
+    if (l7 !== null) {
+      l9 = Math.max(0, +(l7 - l8).toFixed(2));
+    }
+    setCalc('line9', l9);
+  }
+
+  function clearForm() {
+    document.getElementById('debtorName').value = '';
+    ['line1','line2','line8','customWeeks'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.querySelectorAll('input[name="payperiod"]').forEach(r => r.checked = false);
+    ['line3','line4','line5display','line6','line7','line9'].forEach(id => setCalc(id, null));
+  }
+</script>
+</body>
+</html>
